@@ -83,6 +83,47 @@
   font-weight: 700;
   text-align: center;
 }
+input[type=number]::-webkit-outer-spin-button,
+input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+input[type=number] { -moz-appearance: textfield; }
+
+body { padding-left: max(24px, env(safe-area-inset-left));
+       padding-right: max(24px, env(safe-area-inset-right)); }
+
+@media (max-width: 560px){
+  .card{ padding:16px; border-radius:16px; }
+  .sub{ font-size:14px; margin-bottom:12px; }
+
+  .stage{ min-height: 260px; padding:8px; border-radius:14px; }
+  .controls{ padding:12px; border-radius:14px; }
+
+  #form label{ width:100%; }
+  #guess{ width:100%; font-size:16px; padding:12px 14px; }
+
+  .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    width:100%;
+  }
+  .row .btn{ width:100%; justify-self:stretch; }
+
+  .feedback{ gap:8px; }
+  .chip{ padding:6px 10px; font-size:13px; }
+
+  .meter{ height:12px; }
+
+  .guesses{ gap:6px; }
+  .guess-item{ padding:4px 8px; font-size:13px; }
+
+  h1{ font-size: clamp(28px, 6vw, 40px); margin-bottom: 14px; }
+  #streakBar{ font-size:16px; margin-bottom:16px; }
+}
+
+@media (max-width: 360px){
+  .stage{ min-height: 220px; }
+  .meter{ height: 10px; }
+}
   </style>
 </head>
 <body>
@@ -384,7 +425,6 @@ async function restoreGame(){
     guessInput.disabled=false; guessInput.value=''; errorMsg.textContent=''; errorMsg.classList.remove('visible');
     lockNewGameButton();
     animateAngle(0,targetAngle,500);
-    saveGame();
     guessInput.focus();
   }
 
@@ -439,6 +479,7 @@ async function restoreGame(){
 
     stats.textContent=`Essai ${attempts}/${maxAttempts}`;
     saveGame();
+    guessInput.value = '';
   });
 
   resetBtn.addEventListener('click', ()=>{ if(!resetBtn.disabled) newGame(); });
