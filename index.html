@@ -193,6 +193,36 @@ body{
 
   .meter{ height:8px; }
 }
+/* 1) Évite les bandes blanches au bounce iOS */
+html{
+  background-color:#0b0e1a;            /* même teinte que ton fond */
+}
+body{
+  background-color:#0b0e1a;            /* fallback sous le dégradé */
+  /* garde ton radial-gradient existant, ne le retire pas */
+  overscroll-behavior: contain;         /* évite d’exposer l’arrière-plan du viewport */
+}
+
+/* 2) Hauteur de viewport correcte sur iOS (barres système dynamiques) */
+body{
+  min-height: 100vh;   /* fallback anciens navigateurs */
+  min-height: 100dvh;  /* viewport dynamique moderne */
+  min-height: 100svh;  /* petit viewport iOS pour sécurité */
+}
+
+/* 3) Safe-areas iOS (bordures arrondies, barre home) */
+body{
+  padding-left: max(16px, env(safe-area-inset-left));
+  padding-right: max(16px, env(safe-area-inset-right));
+  padding-bottom: max(24px, env(safe-area-inset-bottom));
+  -webkit-text-size-adjust: 100%;
+}
+
+/* 4) Option: rendu un peu moins “zoomé” sur phones larges (≤430px) */
+@media (max-width: 430px){
+  .stage{ min-height: 220px; } /* tu avais 240px, on compacte un peu */
+  h1{ font-size: clamp(26px, 6.5vw, 34px); }
+}
   </style>
 </head>
 <body>
