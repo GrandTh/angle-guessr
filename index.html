@@ -497,6 +497,9 @@ async function restoreGame(){
     updateGuesses();
     guessInput.disabled = !gameActive;
     resetBtn.disabled = gameActive;
+    const showPrecision = attempts >= maxAttempts - 1 && gameActive;
+    precisionDiv.classList.toggle('visible', showPrecision);
+    precisionDiv.classList.toggle('invisible', !showPrecision);
     return true;
   }catch(err){
     console.warn('restoreGame failed', err);
@@ -521,7 +524,9 @@ async function restoreGame(){
 
   function lockNewGameButton(){ resetBtn.disabled = gameActive; }
   function newGame(){
-    attempts=0; previousGuesses=[]; targetAngle=randInt(1,179);precisionDiv.classList.remove('visible');
+    attempts=0; previousGuesses=[]; targetAngle=randInt(1,179);
+    precisionDiv.classList.remove('visible');
+    precisionDiv.classList.add('invisible');
     gameActive = true;
     feedback.innerHTML=''; heatbar.style.width='0%';
     stats.textContent='Nouvelle partie, tu as 5 essais.';
@@ -562,7 +567,8 @@ async function restoreGame(){
     heatbar.style.width=heatPercent(diff)+'%';
 
     if (attempts >= maxAttempts - 1) {
-      precisionDiv.className='visible';
+      precisionDiv.classList.remove('invisible');
+      precisionDiv.classList.add('visible');
     }
 
     if(guess===targetAngle){
