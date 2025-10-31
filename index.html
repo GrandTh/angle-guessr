@@ -95,6 +95,28 @@
       .mode{ padding:14px; }
       .mode__streak{ padding:7px 10px; }
     }
+    .madeby {
+      position: fixed;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      text-align: center;
+      font-size: 13px;
+      color: var(--muted);
+      opacity: 0.75;
+      letter-spacing: 0.3px;
+      transition: opacity .2s ease, color .2s ease;
+      pointer-events: none; /* évite les clics dessus */
+    }
+
+    .madeby strong {
+      color: var(--ink);
+    }
+
+    .madeby:hover {
+      opacity: 1;
+      color: var(--accent);
+    }
   </style>
 </head>
 <body>
@@ -123,6 +145,9 @@
 
       <div class="footer">Best of luck !</div>
     </div>
+    <footer class="madeby">
+    Made with ❤️ by <strong>GrandTh</strong>
+  </footer>
   </div>
 
   <script>
