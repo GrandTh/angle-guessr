@@ -133,8 +133,8 @@
       </div>
       <div class="card-intro">
         <p class="sub">
-          Tu as <strong>5 essais</strong> pour deviner l'angle (1° à 179°).
-          Aide : ⬆️/⬇️ et 🔥/🥶 selon ta précision.
+          You have <strong>5 attempts</strong> to guess the angle (1° to 179°).
+          Help: ⬆️/⬇️ and 🔥/🥶 depending on your accuracy.
         </p>
         <div id="streakBar" class="streakchip"></div>
       </div>
@@ -150,17 +150,17 @@
         </div>
         <div class="controls">
           <form id="form" autocomplete="off" novalidate>
-            <label class="discreet" for="guess">Ta proposition</label>
+            <label class="discreet" for="guess">Your proposal</label>
             <input id="guess" name="guess" type="number" inputmode="numeric" min="1" max="179" placeholder="ex. 27" />
             <div id="errorMsg"></div>
             <div class="row">
-              <button class="btn" type="submit">Valider</button>
-              <button class="btn secondary" type="button" id="reset">Nouvelle partie</button>
+              <button class="btn" type="submit">Confirm</button>
+              <button class="btn secondary" type="button" id="reset">New game</button>
             </div>
           </form>
           <div id="feedback" class="feedback"></div>
           <div id="precision" class="invisible">
-            <div class="meta">Précision</div>
+            <div class="meta">Accuracy</div>
             <div class="meter"><div id="heatbar"></div></div>
           </div>
           <strong><div class="meta" id="stats"></div></strong>
@@ -380,7 +380,7 @@
       heatbar.style.width = previousGuesses.length
         ? heatPercent(Math.abs(previousGuesses[previousGuesses.length-1]-targetAngle)) + '%'
         : '0%';
-      stats.textContent = gameActive ? `Essai ${attempts}/${maxAttempts}` : `Partie terminée.`;
+      stats.textContent = gameActive ? `Try ${attempts}/${maxAttempts}` : `Game over.`;
       updateGuesses();
       guessInput.disabled = !gameActive;
       resetBtn.disabled = gameActive;
@@ -398,7 +398,7 @@
     if(previousGuesses.length===0){
       guessesTitle.textContent=''; guessesList.innerHTML=''; return;
     }
-    guessesTitle.textContent='🧠 Tes essais précédents :';
+    guessesTitle.textContent='🧠 Your previous attempts :';
     guessesList.innerHTML='';
     previousGuesses.forEach((g, i)=>{
       const item=document.createElement('div');
@@ -432,7 +432,7 @@
   }
   function appendCountdownToStats(){
     const base = stats.dataset.baseMsg || stats.textContent || '';
-    stats.textContent = `${base}  ·  Reprise auto dans ${autoRemaining}s`;
+    stats.textContent = `${base}  ·  recovery in ${autoRemaining}s`;
   }
   function setStats(msg){
     stats.dataset.baseMsg = msg;
@@ -447,7 +447,7 @@
     precisionDiv.classList.add('invisible');
     gameActive = true;
     feedback.innerHTML=''; heatbar.style.width='0%';
-    setStats('Nouvelle partie, tu as 5 essais.');
+    setStats('New game, you have 5 attempts.');
     guessesTitle.textContent=''; guessesList.innerHTML='';
     guessInput.disabled=false; guessInput.value=''; errorMsg.textContent=''; errorMsg.classList.remove('visible');
     lockNewGameButton();
@@ -464,7 +464,7 @@
 
     const value=guessInput.value.trim();
     if(value===''){
-      errorMsg.textContent='⚠️ Entre une valeur avant de valider !';
+      errorMsg.textContent='⚠️ Enter a value before confirming !';
       errorMsg.classList.add('visible');
       return;
     }
@@ -492,7 +492,7 @@
 
     if(guess===targetAngle){
       lastWin = true;
-      setStats(`Bravo ! L'angle était ${targetAngle}°. Trouvé en ${attempts} essai(s) 🔥`);
+      setStats(`Well done! The angle was ${targetAngle}°. Found in ${attempts} attempts. 🔥`);
       guessInput.disabled=true;
       gameActive = false;
       lockNewGameButton();
@@ -505,7 +505,7 @@
 
     if(attempts>=maxAttempts){
       lastWin = false;
-      setStats(`Perdu 💀 L'angle était ${targetAngle}°.`);
+      setStats(`Lost 💀 The angle was ${targetAngle}°.`);
       guessInput.disabled=true;
       gameActive = false;
       lockNewGameButton();
@@ -516,7 +516,7 @@
       return;
     }
 
-    setStats(`Essai ${attempts}/${maxAttempts}`);
+    setStats(`Try ${attempts}/${maxAttempts}`);
     saveGame();
     guessInput.value = '';
     guessInput.focus();
