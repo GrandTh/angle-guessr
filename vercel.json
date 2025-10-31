@@ -3,5 +3,7 @@
     { "source": "/",       "destination": "/index.html" },
     { "source": "/game",   "destination": "/game.html" },
     { "source": "/daily",  "destination": "/daily.html" }
-  ]
+  ],
+  "cleanUrls": true,
+  "trailingSlash": false
 }
