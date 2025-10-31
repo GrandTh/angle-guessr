@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icon-32.png?v=2">
+  <link rel="icon" type="image/png" sizes="16x16" href="/icon-16.png?v=2">
+  <link rel="apple-touch-icon" href="/icon-192.png?v=2">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0f1222">
+  <title>Angle guessr</title>
+  <style>
+    :root{
+      --bg:#0f1222; --panel:#171a2b; --ink:#e9ecff; --muted:#a6adda; --accent:#7c5cff; --good:#2bd576; --bad:#ff6b6b;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+      background: radial-gradient(1200px 800px at 70% -10%, #1a1f3a 0%, #0f1222 60%, #0b0e1a 100%);
+      color:var(--ink); display:flex; align-items:center; justify-content:center; padding:24px;
+    }
+    .app{width:min(920px, 100%);}
+    .card{
+      background:linear-gradient(180deg,#1a1e33 0%, #14182b 100%);
+      border:1px solid rgba(255,255,255,.06);
+      box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+      border-radius:20px; padding:24px; backdrop-filter:blur(6px);
+    }
+    h1{margin:0 0 12px; font-size:clamp(20px, 2.8vw, 34px); letter-spacing:.3px}
+    .sub{color:var(--muted); margin-bottom:18px}
+    .layout{display:grid; grid-template-columns: 1.3fr 1fr; gap:22px}
+    @media (max-width: 880px){.layout{grid-template-columns:1fr}}
+    .stage{background: radial-gradient(600px 400px at 60% -20%, #1f2444, #151a2f); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:10px; display:flex; align-items:center; justify-content:center; aspect-ratio: 1 / 1; min-height: 320px;}
+    svg{width:100%; height:100%}
+    .controls{background:var(--panel); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:16px}
+    .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    input[type=number]{background:#0f1326; color:var(--ink); border:1px solid rgba(255,255,255,.12); outline:none; border-radius:12px; padding:12px 14px; font-size:16px; width:140px; transition:border .15s ease, box-shadow .15s ease}
+    input[type=number]:focus{border-color:var(--accent); box-shadow:0 0 0 6px rgba(124,92,255,.15)}
+    .btn{appearance:none; border:none; cursor:pointer; color:white; font-weight:600; letter-spacing:.2px; padding:12px 16px; border-radius:12px; background:linear-gradient(180deg, #8a6bff, #6945ff); box-shadow:0 6px 16px rgba(105,69,255,.35); transition:transform .05s ease}
+    .btn:active{transform:translateY(1px)}
+    .btn.secondary{background:transparent; border:1px solid rgba(255,255,255,.18); box-shadow:none; color:var(--muted)}
+    .feedback{margin-top:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+    .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:#0e1326}
+    .meta{margin-top:10px; color:var(--muted); font-size:14px}
+    .meter{height:10px; background:#0f1326; border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
+    .meter > div{height:100%; width:0%; background:linear-gradient(90deg,#2bd576,#ffd166,#ff8b6b,#ff6b6b); transition:width .25s ease}
+    .discreet{opacity:.85}
+    .visible{opacity:1 !important}
+    .invisible{opacity:0}
+    #errorMsg { color: var(--bad); font-size: 14px; margin-top: 6px; margin-bottom: 10px; opacity: 0; transition: opacity 0.2s ease; }
+    #errorMsg.visible { opacity: 1; }
+    .guesses { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .guess-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px 10px; font-size: 14px; color: var(--muted); transition: background .2s ease; }
+    .guess-item:hover { background: rgba(124,92,255,0.15); color: var(--ink); }
+    .guess-item.added { animation: pop .25s ease-out; }
+    @keyframes pop { 0%{transform:scale(.7);opacity:0} 60%{transform:scale(1.08);opacity:1} 100%{transform:scale(1)} }
+    input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+    body { padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right)); }
+    @media (max-width: 560px){ .card{padding:16px;border-radius:16px} .sub{font-size:14px;margin-bottom:12px} .stage{min-height:260px;padding:8px;border-radius:14px} .controls{padding:12px;border-radius:14px} #form label{width:100%} #guess{width:100%;font-size:16px;padding:12px 14px} .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%} .row .btn{width:100%;justify-self:stretch} .feedback{gap:8px} .chip{padding:6px 10px;font-size:13px} .meter{height:12px} .guesses{gap:6px} .guess-item{padding:4px 8px;font-size:13px} h1{font-size:clamp(28px, 6vw, 40px);margin-bottom:14px} #streakBar{font-size:16px;margin-bottom:16px} }
+    @media (max-width: 360px){ .stage{min-height:220px} .meter{height:10px} }
+    body{ padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); padding-bottom:max(24px, env(safe-area-inset-bottom)); -webkit-text-size-adjust:100%; }
+    @media (max-width: 430px){ .card{padding:14px;border-radius:16px} .layout{grid-template-columns:1fr;gap:14px} h1{font-size:clamp(26px, 7vw, 36px);margin-bottom:10px} #streakBar{font-size:15px;margin-bottom:12px} .sub{font-size:14px;margin-bottom:10px} .stage{min-height:240px;padding:8px;border-radius:14px} .controls{padding:12px;border-radius:14px} .row{display:grid;grid-template-columns:1fr 1fr;gap:10px} .row .btn{width:100%;padding:12px 0} #form label{width:100%} #guess{width:100%;font-size:16px;padding:12px 14px} .feedback{gap:8px} .chip{padding:6px 10px;font-size:13px} .guesses{gap:6px} .guess-item{padding:4px 8px;font-size:13px} .meter{height:12px} }
+    @media (max-width: 375px){ .stage{min-height:210px} h1{font-size:clamp(24px, 7.5vw, 34px)} #streakBar{font-size:14px} .meter{height:10px} }
+    @media (max-width: 360px){ .card{padding:12px;border-radius:14px} .layout{grid-template-columns:1fr;gap:12px} h1{font-size:clamp(22px, 7.2vw, 28px);margin-bottom:8px} #streakBar{font-size:13px;margin-bottom:10px} .sub{font-size:13px;line-height:1.35;margin-bottom:10px} .stage{min-height:190px;padding:6px;border-radius:12px} .controls{padding:10px;border-radius:12px} #form label{width:100%;font-size:13px} #guess{width:100%;font-size:16px;padding:10px 12px} .row{display:grid;grid-template-columns:1fr;gap:8px} .row .btn{width:100%;padding:11px 0} .chip{padding:5px 9px;font-size:12.5px} .guesses{gap:5px} .guess-item{padding:3px 7px;font-size:12.5px} .meter{height:8px} }
+    html{background-color:#0b0e1a}
+    body{background-color:#0b0e1a; overscroll-behavior:contain}
+    body{min-height:100vh; min-height:100dvh; min-height:100svh}
+    body{padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); padding-bottom:max(24px, env(safe-area-inset-bottom)); -webkit-text-size-adjust:100%}
+    @media (max-width: 430px){ .stage{min-height:220px} h1{font-size:clamp(26px, 6.5vw, 34px)} }
+    .card-header{
+      display:flex;
+      justify-content:flex-start;
+      margin-bottom:12px;
+    }
+    .backbtn{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:10px 14px; border-radius:999px;
+      background:rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color:var(--ink); text-decoration:none; font-weight:600; line-height:1;
+      transition:background .15s ease, border-color .15s ease, transform .05s ease;
+    }
+    .backbtn:hover{ background:rgba(124,92,255,.16); border-color:rgba(124,92,255,.35); }
+    .backbtn:active{ transform:translateY(1px); }
+    .card-intro{
+      display:flex;
+      align-items:flex-start;         /* au lieu de center */
+      justify-content:flex-start;     /* au lieu de space-between */
+      align-content:flex-start;       /* évite l’étirement quand ça wrap */
+      gap:12px 16px;                  /* contrôle l’espace */
+      margin-bottom:14px;
+      flex-wrap:wrap;
+    }
+    .card-intro .sub{
+      margin:0;
+      flex:1 1 auto;                  /* pas de min-width qui force une 2e ligne */
+      min-width:0;
+    }
+
+    /* chip streak identique à Daily */
+    .streakchip, #streakBar{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:8px 12px; border-radius:999px;
+      border:1px solid rgba(255,255,255,.12);
+      background:#0e1326; color:#ffd166; font-weight:700;
+      white-space:nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
+      margin:0;            /* annule les anciens margins */
+      text-align:left;     /* annule text-align:center précédent */
+    }
+
+    /* Mobile: on empile proprement */
+    @media (max-width: 640px){
+      .card-intro{ flex-direction:column; align-items:flex-start; gap:10px; }
+      .backbtn{ padding:8px 12px; font-size:14px; }
+    }
+    @media (max-width: 360px){
+      .streakchip, #streakBar{ width:100%; justify-content:center; }
+      .backbtn{ padding:7px 10px; font-size:13px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div style="text-align:center;">
+      <h1 style="font-size: clamp(40px, 6vw, 70px); margin-bottom: 24px;">🎯 Angle Guessr</h1>
+    </div>
+    <div class="card">
+      <div class="card-header">
+       <a href="/" class="backbtn" aria-label="Retour au menu">← Menu</a>
+      </div>
+      <div class="card-intro">
+        <p class="sub">
+          Tu as <strong>5 essais</strong> pour deviner l'angle (1° à 179°).
+          Aide : ⬆️/⬇️ et 🔥/🥶 selon ta précision.
+        </p>
+        <div id="streakBar" class="streakchip"></div>
+      </div>
+      <div class="layout">
+        <div class="stage" id="stage">
+          <svg viewBox="0 0 400 400">
+            <rect width="400" height="400" fill="url(#grid)" />
+            <circle cx="200" cy="200" r="3" fill="#a6adda" opacity=".9" />
+            <line id="rayA" x1="200" y1="200" x2="360" y2="200" stroke="#e9ecff" stroke-width="4" stroke-linecap="round"/>
+            <line id="rayB" x1="200" y1="200" x2="360" y2="200" stroke="#7c5cff" stroke-width="4" stroke-linecap="round"/>
+            <path id="arc" d="" fill="none" stroke="#ffd166" stroke-width="4" opacity=".9"/>
+          </svg>
+        </div>
+        <div class="controls">
+          <form id="form" autocomplete="off" novalidate>
+            <label class="discreet" for="guess">Ta proposition</label>
+            <input id="guess" name="guess" type="number" inputmode="numeric" min="1" max="179" placeholder="ex. 27" />
+            <div id="errorMsg"></div>
+            <div class="row">
+              <button class="btn" type="submit">Valider</button>
+              <button class="btn secondary" type="button" id="reset">Nouvelle partie</button>
+            </div>
+          </form>
+          <div id="feedback" class="feedback"></div>
+          <div id="precision" class="invisible">
+            <div class="meta">Précision</div>
+            <div class="meter"><div id="heatbar"></div></div>
+          </div>
+          <strong><div class="meta" id="stats"></div></strong>
+          <div class="meta" id="guesses-title" style="margin-top:8px; margin-bottom:8px; font-weight:600;"></div>
+          <div id="guesses-list" class="guesses"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  let targetAngle = 0;
+  let attempts = 0;
+  const maxAttempts = 5;
+  let previousGuesses = [];
+  let gameActive = false;
+
+  // Auto-next state
+  let autoTimer = null;
+  let autoRemaining = 0;
+  let lastWin = false;
+
+  const rayB = document.getElementById('rayB');
+  const arc = document.getElementById('arc');
+  const feedback = document.getElementById('feedback');
+  const heatbar = document.getElementById('heatbar');
+  const stats = document.getElementById('stats');
+  const form = document.getElementById('form');
+  const guessInput = document.getElementById('guess');
+  const resetBtn = document.getElementById('reset');
+  const errorMsg = document.getElementById('errorMsg');
+  const guessesTitle = document.getElementById('guesses-title');
+  const guessesList = document.getElementById('guesses-list');
+  const precisionDiv = document.getElementById('precision');
+
+  const GAME_KEY   = 'angle_guessr_game_v1';
+  const STREAK_KEY = 'angle_guessr_streak_v1';
+  const BEST_KEY   = 'angle_guessr_best_v1';
+  const SIG_KEY    = 'angle_guessr_sig_v1';
+  const INSTALL_ID = 'angle_guessr_install_id_v1';
+
+  function randInt(min, max){return Math.floor(Math.random()*(max-min+1))+min;}
+  function pointAt(cx,cy,r,deg){const rad=deg*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy-r*Math.sin(rad)}}
+  function drawAngle(deg){
+    const c={x:200,y:200},r=160,p=pointAt(c.x,c.y,r,deg);
+    rayB.setAttribute('x2',p.x); rayB.setAttribute('y2',p.y);
+    const ar=52,s=pointAt(c.x,c.y,ar,0),e=pointAt(c.x,c.y,ar,deg),
+          d=`M ${s.x} ${s.y} A ${ar} ${ar} 0 0 0 ${e.x} ${e.y}`;
+    arc.setAttribute('d',d);
+  }
+  function animateAngle(start,end,duration){
+    const startTime=performance.now(); const diff=end-start;
+    function easeOut(t){return 1-Math.pow(1-t,3);}
+    function step(now){
+      const elapsed=now-startTime; const progress=Math.min(elapsed/duration,1);
+      const eased=easeOut(progress); const current=start+diff*eased;
+      drawAngle(current); if(progress<1)requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  function heatEmoji(diff){if(diff===0)return'🎯 Parfait !';if(diff<=2)return'🔥🔥 Très chaud';if(diff<=5)return'🔥 Chaud';if(diff<=10)return'🙂 Tiède';if(diff<=20)return'🧊 Frais';return'🥶 Glacial';}
+  function arrowHint(g){if(g<targetAngle)return'⬆️ Plus haut';if(g>targetAngle)return'⬇️ Plus bas';return'✅ Exact';}
+  function heatPercent(diff){return(100-Math.min(diff,180)/180*100);}
+
+  function getInstallId(){
+    let id = localStorage.getItem(INSTALL_ID);
+    if(!id){
+      id = (crypto && crypto.randomUUID) ? crypto.randomUUID() : String(Math.random()).slice(2) + Date.now();
+      try { localStorage.setItem(INSTALL_ID, id); } catch {}
+    }
+    return id;
+  }
+  async function sha256(text){
+    const enc = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest('SHA-256', enc);
+    return Array.from(new Uint8Array(buf)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  async function computeSig(streak, best){
+    const material = `${streak}|${best}|${getInstallId()}|${navigator.userAgent}`;
+    return await sha256(material);
+  }
+  function getNum(key){ const v=Number(localStorage.getItem(key)); return Number.isFinite(v) ? v : 0; }
+
+  async function loadStreakSafe(){
+    const s = getNum(STREAK_KEY);
+    const b = getNum(BEST_KEY);
+    const sig = localStorage.getItem(SIG_KEY) || '';
+    const expect = await computeSig(s,b);
+    if(sig !== expect){
+      setStreak(0);
+      await saveSig(0, b);
+      return {streak:0, best:b};
+    }
+    return {streak:s, best:b};
+  }
+  async function saveSig(s,b){
+    try { localStorage.setItem(SIG_KEY, await computeSig(s,b)); } catch {}
+  }
+  function setStreak(v){ try{ localStorage.setItem(STREAK_KEY, String(v)); }catch{} }
+  function setBest(v){ try{ localStorage.setItem(BEST_KEY, String(v)); }catch{} }
+  async function bumpStreak(){
+    const cur = getNum(STREAK_KEY) + 1;
+    setStreak(cur);
+    const best = Math.max(getNum(BEST_KEY), cur);
+    setBest(best);
+    await saveSig(cur, best);
+    renderStreak(cur, best);
+  }
+  async function resetStreak(){
+    const best = getNum(BEST_KEY);
+    setStreak(0);
+    await saveSig(0, best);
+    renderStreak(0, best);
+  }
+  function renderStreak(s = getNum(STREAK_KEY), b = getNum(BEST_KEY)) {
+    const el = document.getElementById('streakBar');
+    if (!el) return;
+    if (s >= 1) {
+      el.textContent = `🔥${s}  (best ${b})`;
+    } else {
+      el.textContent = `(best ${b})`;
+    }
+  }
+
+  window.addEventListener('storage', async (e)=>{
+    if([STREAK_KEY,BEST_KEY,SIG_KEY].includes(e.key)){
+      await loadStreakSafe(); renderStreak();
+    }
+  });
+
+  function openIDB(){
+    return new Promise((resolve, reject) => {
+      const req = indexedDB.open('angle_guessr_keys_v1', 1);
+      req.onupgradeneeded = () => { req.result.createObjectStore('keys'); };
+      req.onsuccess = () => resolve(req.result);
+      req.onerror = () => reject(req.error);
+    });
+  }
+  async function putKeyInIDB(keyName, cryptoKey){
+    const db = await openIDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('keys','readwrite');
+      tx.objectStore('keys').put(cryptoKey, keyName);
+      tx.oncomplete = () => { db.close(); res(true); };
+      tx.onerror = () => { db.close(); rej(tx.error); };
+    });
+  }
+  async function getKeyFromIDB(keyName){
+    const db = await openIDB();
+    return new Promise((res, rej) => {
+      const tx = db.transaction('keys','readonly');
+      const store = tx.objectStore('keys').get(keyName);
+      store.onsuccess = () => { db.close(); res(store.result || null); };
+      store.onerror = () => { db.close(); rej(store.error); };
+    });
+  }
+
+  async function getMasterKey(){
+    let key = await getKeyFromIDB('master');
+    if(key) return key;
+    key = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt','decrypt']
+    );
+    await putKeyInIDB('master', key);
+    return key;
+  }
+
+  function toHex(buffer){
+    return Array.from(new Uint8Array(buffer)).map(b=>b.toString(16).padStart(2,'0')).join('');
+  }
+  function fromHex(hex){
+    const bytes = new Uint8Array(hex.length/2);
+    for(let i=0;i<bytes.length;i++) bytes[i] = parseInt(hex.substr(i*2,2),16);
+    return bytes.buffer;
+  }
+
+  async function encryptObject(obj){
+    const key = await getMasterKey();
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    const data = new TextEncoder().encode(JSON.stringify(obj));
+    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+    return { iv: toHex(iv.buffer), ct: toHex(ct) };
+  }
+  async function decryptObject(stored){
+    try {
+      const key = await getMasterKey();
+      const iv = new Uint8Array(fromHex(stored.iv));
+      const ct = fromHex(stored.ct);
+      const plain = await crypto.subtle.decrypt({ name:'AES-GCM', iv }, key, ct);
+      return JSON.parse(new TextDecoder().decode(plain));
+    } catch { return null; }
+  }
+
+  async function saveGame(){
+    const payload = { targetAngle, attempts, previousGuesses, gameActive };
+    try { const boxed = await encryptObject(payload); localStorage.setItem(GAME_KEY, JSON.stringify(boxed)); }
+    catch (e){ console.warn('saveGame failed', e); }
+  }
+  async function clearGame(){ try { localStorage.removeItem(GAME_KEY); } catch {} }
+
+  async function restoreGame(){
+    const raw = localStorage.getItem(GAME_KEY);
+    if(!raw) return false;
+    try{
+      const boxed = JSON.parse(raw);
+      const g = await decryptObject(boxed);
+      if(!g || typeof g !== 'object') return false;
+      targetAngle = g.targetAngle ?? randInt(1,179);
+      attempts = g.attempts ?? 0;
+      previousGuesses = Array.isArray(g.previousGuesses) ? g.previousGuesses : [];
+      gameActive = !!g.gameActive;
+
+      drawAngle(targetAngle);
+      feedback.innerHTML = '';
+      heatbar.style.width = previousGuesses.length
+        ? heatPercent(Math.abs(previousGuesses[previousGuesses.length-1]-targetAngle)) + '%'
+        : '0%';
+      stats.textContent = gameActive ? `Essai ${attempts}/${maxAttempts}` : `Partie terminée.`;
+      updateGuesses();
+      guessInput.disabled = !gameActive;
+      resetBtn.disabled = gameActive;
+      const showPrecision = attempts >= maxAttempts - 1 && gameActive;
+      precisionDiv.classList.toggle('visible', showPrecision);
+      precisionDiv.classList.toggle('invisible', !showPrecision);
+      return true;
+    }catch(err){
+      console.warn('restoreGame failed', err);
+      return false;
+    }
+  }
+
+  function updateGuesses(){
+    if(previousGuesses.length===0){
+      guessesTitle.textContent=''; guessesList.innerHTML=''; return;
+    }
+    guessesTitle.textContent='🧠 Tes essais précédents :';
+    guessesList.innerHTML='';
+    previousGuesses.forEach((g, i)=>{
+      const item=document.createElement('div');
+      item.className='guess-item';
+      item.textContent=`${g}°`;
+      guessesList.appendChild(item);
+      if(i===previousGuesses.length-1){ void item.offsetWidth; item.classList.add('added'); }
+    });
+  }
+
+  function lockNewGameButton(){ resetBtn.disabled = gameActive; }
+
+  function clearAutoNext(){
+    if(autoTimer){ clearInterval(autoTimer); autoTimer = null; }
+    autoRemaining = 0;
+  }
+  function startAutoNext(seconds){
+    clearAutoNext();
+    autoRemaining = seconds;
+    // Ajoute l’indication au texte déjà présent
+    appendCountdownToStats();
+    autoTimer = setInterval(()=>{
+      autoRemaining--;
+      if(autoRemaining <= 0){
+        clearAutoNext();
+        newGame();
+        return;
+      }
+      appendCountdownToStats();
+    }, 1000);
+  }
+  function appendCountdownToStats(){
+    const base = stats.dataset.baseMsg || stats.textContent || '';
+    stats.textContent = `${base}  ·  Reprise auto dans ${autoRemaining}s`;
+  }
+  function setStats(msg){
+    stats.dataset.baseMsg = msg;
+    stats.textContent = msg;
+  }
+
+  function newGame(){
+    clearAutoNext();
+    lastWin = false;
+    attempts=0; previousGuesses=[]; targetAngle=randInt(1,179);
+    precisionDiv.classList.remove('visible');
+    precisionDiv.classList.add('invisible');
+    gameActive = true;
+    feedback.innerHTML=''; heatbar.style.width='0%';
+    setStats('Nouvelle partie, tu as 5 essais.');
+    guessesTitle.textContent=''; guessesList.innerHTML='';
+    guessInput.disabled=false; guessInput.value=''; errorMsg.textContent=''; errorMsg.classList.remove('visible');
+    lockNewGameButton();
+    animateAngle(0,targetAngle,500);
+    // Focus immédiat
+    setTimeout(()=>guessInput.focus(), 0);
+  }
+
+  form.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    errorMsg.textContent=''; errorMsg.classList.remove('visible');
+
+    if(!gameActive){ return; }
+
+    const value=guessInput.value.trim();
+    if(value===''){
+      errorMsg.textContent='⚠️ Entre une valeur avant de valider !';
+      errorMsg.classList.add('visible');
+      return;
+    }
+    if(attempts>=maxAttempts) return;
+
+    const g=Number(value);
+    if(!Number.isFinite(g)) return;
+    const guess=Math.max(1,Math.min(179,Math.round(g)));
+
+    attempts++;
+    previousGuesses.push(guess);
+    updateGuesses();
+
+    const diff=Math.abs(guess-targetAngle);
+    feedback.innerHTML='';
+    const arrow=document.createElement('div');arrow.className='chip';arrow.textContent=arrowHint(guess);
+    const heat=document.createElement('div');heat.className='chip';heat.textContent=heatEmoji(diff);
+    feedback.appendChild(arrow); feedback.appendChild(heat);
+    heatbar.style.width=heatPercent(diff)+'%';
+
+    if (attempts >= maxAttempts - 1) {
+      precisionDiv.classList.remove('invisible');
+      precisionDiv.classList.add('visible');
+    }
+
+    if(guess===targetAngle){
+      lastWin = true;
+      setStats(`Bravo ! L'angle était ${targetAngle}°. Trouvé en ${attempts} essai(s) 🔥`);
+      guessInput.disabled=true;
+      gameActive = false;
+      lockNewGameButton();
+      clearGame();
+      await bumpStreak();
+      // Auto-restart après 5s si aucune action
+      startAutoNext(5);
+      return;
+    }
+
+    if(attempts>=maxAttempts){
+      lastWin = false;
+      setStats(`Perdu 💀 L'angle était ${targetAngle}°.`);
+      guessInput.disabled=true;
+      gameActive = false;
+      lockNewGameButton();
+      clearGame();
+      await resetStreak();
+      // Auto-restart après 5s si aucune action
+      startAutoNext(5);
+      return;
+    }
+
+    setStats(`Essai ${attempts}/${maxAttempts}`);
+    saveGame();
+    guessInput.value = '';
+    guessInput.focus();
+  });
+
+  resetBtn.addEventListener('click', ()=>{
+    if(!resetBtn.disabled) newGame();
+  });
+
+  // Raccourcis clavier:
+  // - 'r' : nouvelle partie (comme avant)
+  // - 'Enter' après une VICTOIRE : relance immédiate
+  window.addEventListener('keydown',ev=>{
+    const key = ev.key.toLowerCase();
+    if(key === 'r' && !resetBtn.disabled){ newGame(); }
+    if(ev.key === 'Enter' && !gameActive && lastWin){
+      newGame();
+    }
+  });
+
+  window.addEventListener('beforeunload', ()=>{ if(gameActive) saveGame(); });
+
+  (async function init(){
+    await loadStreakSafe();
+    renderStreak();
+
+    const restored = await restoreGame();
+    if (!restored) {
+      newGame();
+    } else {
+      lockNewGameButton();
+      if(gameActive){ setTimeout(()=>guessInput.focus(), 0); }
+    }
+  })();
+  </script>
+</body>
+</html>
