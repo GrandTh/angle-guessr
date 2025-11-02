@@ -11,178 +11,213 @@
   <meta name="theme-color" content="#0f1222">
   <title>Daily</title>
   <style>
-  :root{
-    --bg:#0f1222; --panel:#171a2b; --ink:#e9ecff; --muted:#a6adda; --accent:#7c5cff; --good:#2bd576; --bad:#ff6b6b;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{
-    margin:0; font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
-    background: radial-gradient(1200px 800px at 70% -10%, #1a1f3a 0%, #0f1222 60%, #0b0e1a 100%);
-    color:var(--ink); display:flex; align-items:center; justify-content:center; padding:24px;
-  }
-  .app{width:min(920px, 100%);}
-  .card{
-    background:linear-gradient(180deg,#1a1e33 0%, #14182b 100%);
-    border:1px solid rgba(255,255,255,.06);
-    box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
-    border-radius:20px; padding:24px; backdrop-filter:blur(6px);
-  }
-  h1{margin:0 0 12px; font-size:clamp(20px, 2.8vw, 34px); letter-spacing:.3px}
-  .sub{color:var(--muted); margin-bottom:18px}
-  .layout{display:grid; grid-template-columns: 1.3fr 1fr; gap:22px}
-  @media (max-width: 880px){.layout{grid-template-columns:1fr}}
-  .stage{background: radial-gradient(600px 400px at 60% -20%, #1f2444, #151a2f); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:10px; display:flex; align-items:center; justify-content:center; aspect-ratio: 1 / 1; min-height: 320px;}
-  svg{width:100%; height:100%}
-  .controls{background:var(--panel); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:16px}
-  .row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
-  input[type=number]{background:#0f1326; color:var(--ink); border:1px solid rgba(255,255,255,.12); outline:none; border-radius:12px; padding:12px 14px; font-size:16px; width:140px; transition:border .15s ease, box-shadow .15s ease}
-  input[type=number]:focus{border-color:var(--accent); box-shadow:0 0 0 6px rgba(124,92,255,.15)}
-  .btn{appearance:none; border:none; cursor:pointer; color:white; font-weight:600; letter-spacing:.2px; padding:12px 16px; border-radius:12px; background:linear-gradient(180deg, #8a6bff, #6945ff); box-shadow:0 6px 16px rgba(105,69,255,.35); transition:transform .05s ease}
-  .btn:active{transform:translateY(1px)}
-  .btn.secondary{background:transparent; border:1px solid rgba(255,255,255,.18); box-shadow:none; color:var(--muted)}
-  .feedback{margin-top:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap}
-  .chip{display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:#0e1326}
-  .meta{margin-top:10px; color:var(--muted); font-size:14px}
-  .meter{height:10px; background:#0f1326; border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.08)}
-  .meter > div{height:100%; width:0%; background:linear-gradient(90deg,#2bd576,#ffd166,#ff8b6b,#ff6b6b); transition:width .25s ease}
-  .discreet{opacity:.85}
-  .visible{opacity:1 !important}
-  .invisible{opacity:0}
-  #errorMsg { color: var(--bad); font-size: 14px; margin-top: 6px; margin-bottom: 10px; opacity: 0; transition: opacity 0.2s ease; }
-  #errorMsg.visible { opacity: 1; }
-  .guesses { margin-top: 4px; display: flex; flex-wrap: wrap; gap: 6px; }
-  .guess-item { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 4px 10px; font-size: 14px; color: var(--muted); transition: background .2s ease; }
-  .guess-item:hover { background: rgba(124,92,255,0.15); color: var(--ink); }
-  .guess-item.added { animation: pop .25s ease-out; }
-  @keyframes pop { 0%{transform:scale(.7);opacity:0} 60%{transform:scale(1.08);opacity:1} 100%{transform:scale(1)} }
-
-  input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-  input[type=number] { -moz-appearance: textfield; }
-  body { padding-left: max(24px, env(safe-area-inset-left)); padding-right: max(24px, env(safe-area-inset-right)); }
-
-  .card-header{ display:flex; justify-content:flex-start; margin-bottom:12px; }
-  .backbtn{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:10px 14px; border-radius:999px;
-    background:rgba(255,255,255,.06);
-    border:1px solid rgba(255,255,255,.12);
-    color:var(--ink); text-decoration:none; font-weight:600; line-height:1;
-    transition:background .15s ease, border-color .15s ease, transform .05s ease;
-  }
-  .backbtn:hover{ background:rgba(124,92,255,.16); border-color:rgba(124,92,255,.35); }
-  .backbtn:active{ transform:translateY(1px); }
-
-  .card-intro{
-    display:flex; align-items:center; justify-content:space-between;
-    gap:16px; margin-bottom:14px; flex-wrap:wrap;
-  }
-  .card-intro .sub{ margin:0; flex:1 1 360px; }
-
-  .streakchip, #streakBar{
-    display:inline-flex; align-items:center; gap:8px;
-    padding:8px 12px; border-radius:999px;
-    border:1px solid rgba(255,255,255,.12);
-    background:#0e1326; color:#ffd166; font-weight:700;
-    white-space:nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,.04);
-    margin:0; text-align:left;
-  }
-
-  @media (max-width: 560px){
-    .card{padding:16px;border-radius:16px}
-    .sub{font-size:14px;margin-bottom:12px}
-    .stage{min-height:260px;padding:8px;border-radius:14px}
-    .controls{padding:12px;border-radius:14px}
-    #form label{width:100%}
-    #guess{width:100%;font-size:16px;padding:12px 14px}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:100%}
-    .row .btn{width:100%;justify-self:stretch}
-    .feedback{gap:8px}
-    .chip{padding:6px 10px;font-size:13px}
-    .meter{height:12px}
-    .guesses{gap:6px}
-    .guess-item{padding:4px 8px;font-size:13px}
-    h1{font-size:clamp(28px, 6vw, 40px);margin-bottom:14px}
-  }
-
-  @media (max-width: 640px){
-    .card-intro{ flex-direction:column; align-items:flex-start; gap:10px; }
-    .backbtn{ padding:8px 12px; font-size:14px; }
-  }
-
-  @media (max-width: 360px){
-    .stage{min-height:220px}
-    .meter{height:10px}
-    .streakchip, #streakBar{ width:100%; justify-content:center; }
-  }
-
-  body{ padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); padding-bottom:max(24px, env(safe-area-inset-bottom)); -webkit-text-size-adjust:100%; }
-  @media (max-width: 430px){ .card{padding:14px;border-radius:16px} .layout{grid-template-columns:1fr;gap:14px} h1{font-size:clamp(26px, 7vw, 36px);margin-bottom:10px} .sub{font-size:14px;margin-bottom:10px} .stage{min-height:240px;padding:8px;border-radius:14px} .controls{padding:12px;border-radius:14px} .row{display:grid;grid-template-columns:1fr 1fr;gap:10px} .row .btn{width:100%;padding:12px 0} #form label{width:100%} #guess{width:100%;font-size:16px;padding:12px 14px} .feedback{gap:8px} .chip{padding:6px 10px;font-size:13px} .guesses{gap:6px} .guess-item{padding:4px 8px;font-size:13px} .meter{height:12px} }
-  @media (max-width: 375px){ .stage{min-height:210px} h1{font-size:clamp(24px, 7.5vw, 34px)} .meter{height:10px} }
-  @media (max-width: 360px){ .card{padding:12px;border-radius:14px} .layout{grid-template-columns:1fr;gap:12px} h1{font-size:clamp(22px, 7.2vw, 28px);margin-bottom:8px} .sub{font-size:13px;line-height:1.35;margin-bottom:10px} .stage{min-height:190px;padding:6px;border-radius:12px} .controls{padding:10px;border-radius:12px} #form label{width:100%;font-size:13px} #guess{width:100%;font-size:16px;padding:10px 12px} .row{display:grid;grid-template-columns:1fr;gap:8px} .row .btn{width:100%;padding:11px 0} .chip{padding:5px 9px;font-size:12.5px} .guesses{gap:5px} .guess-item{padding:3px 7px;font-size:12.5px} .meter{height:8px} }
-
-  html{background-color:#0b0e1a}
-  body{background-color:#0b0e1a; overscroll-behavior:contain}
-  body{min-height:100vh; min-height:100dvh; min-height:100svh}
-  body{padding-left:max(16px, env(safe-area-inset-left)); padding-right:max(16px, env(safe-area-inset-right)); padding-bottom:max(24px, env(safe-area-inset-bottom)); -webkit-text-size-adjust:100%}
-  @media (max-width: 430px){ .stage{min-height:220px} h1{font-size:clamp(26px, 6.5vw, 34px)} }
-  .card-intro{ display:flex; align-items:flex-start; justify-content:flex-start; align-content:flex-start; gap:12px 16px; margin-bottom:14px; flex-wrap:wrap; }
-  .card-intro .sub{ margin:0; flex:1 1 auto; min-width:0; }
-  #streakBar{ display:inline-flex; align-items:center; gap:8px; padding:8px 12px; border-radius:999px; border:1px solid rgba(255,255,255,.12); background:#0e1326; color:#ffd166; font-weight:700; white-space:nowrap; box-shadow: inset 0 1px 0 rgba(255,255,255,.04); margin:0; text-align:left; }
-  @media (max-width: 640px){ .card-intro{ flex-direction:column; align-items:flex-start; gap:10px; } }
-
-  .madeby { position: fixed; bottom: 12px; left: 50%; transform: translateX(-50%); text-align: center; font-size: 13px; color: var(--muted); opacity: 0.75; letter-spacing: 0.3px; transition: opacity .2s ease, color .2s ease; pointer-events: none; }
-  .madeby strong { color: var(--ink); }
-  .madeby:hover { opacity: 1; color: var(--accent); }
-
-  /* ===== TEST MODE panel ===== */
-  .testbar{
-    position: fixed; top: 12px; right: 12px; z-index: 1000;
-    background: rgba(20,24,43,.95);
-    border:1px solid rgba(255,255,255,.1);
-    backdrop-filter: blur(8px);
-    color: var(--ink);
-    padding: 12px; border-radius: 12px;
-    display: none; width: 320px;
-    box-shadow: 0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
-  }
-  .testbar.visible{ display: block; }
-  .testbar h3{ margin: 0 0 8px; font-size: 14px; color: var(--muted); font-weight: 700; letter-spacing:.3px }
-  .testgrid{ display:grid; grid-template-columns: 1fr 1fr; gap:8px }
-  .testbar input[type="date"]{
-    width:100%; background:#0f1326; color:var(--ink);
-    border:1px solid rgba(255,255,255,.12); border-radius:10px;
-    padding:8px 10px; font-size:13px;
-  }
-  .testbar .btn{ padding:8px 10px; font-size:12px; border-radius:10px }
-  .testbar .row{ gap:8px; }
-  .testnote{ margin-top:8px; font-size:12px; color:var(--muted) }
-  /* ===== TEST LOGIN MODAL ===== */
-.test-login-backdrop{
-  position: fixed; inset: 0; z-index: 2000;
-  background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
-  display: none; align-items: center; justify-content: center;
+:root{
+  --bg:#0f1222; --panel:#171a2b; --ink:#e9ecff; --muted:#a6adda; --accent:#7c5cff; --good:#2bd576; --bad:#ff6b6b;
 }
-.test-login-backdrop.visible{ display: flex; }
-.test-login{
-  width: min(360px, 92vw);
-  background: rgba(20,24,43,.98);
+*{box-sizing:border-box}
+html,body{height:100%}
+html{background:#0b0e1a}
+body{
+  margin:0;
+  font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial;
+  background: radial-gradient(1200px 800px at 70% -10%, #1a1f3a 0%, #0f1222 60%, #0b0e1a 100%);
+  color:var(--ink);
+  display:flex; align-items:center; justify-content:center;
+  padding:24px;
+  overscroll-behavior:contain;
+  padding-left:max(24px, env(safe-area-inset-left));
+  padding-right:max(24px, env(safe-area-inset-right));
+  padding-bottom:max(24px, env(safe-area-inset-bottom));
+  -webkit-text-size-adjust:100%;
+}
+
+.app{width:min(920px,100%)}
+
+.card{
+  background:linear-gradient(180deg,#1a1e33 0%, #14182b 100%);
+  border:1px solid rgba(255,255,255,.06);
+  box-shadow:0 10px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+  border-radius:20px; padding:24px; backdrop-filter:blur(6px);
+}
+
+h1{margin:0 0 12px; font-size:clamp(20px, 2.8vw, 34px); letter-spacing:.3px}
+.sub{color:var(--muted); margin-bottom:18px}
+
+.layout{display:grid; grid-template-columns:1.3fr 1fr; gap:22px}
+@media (max-width:880px){ .layout{grid-template-columns:1fr} }
+
+.stage{
+  background: radial-gradient(600px 400px at 60% -20%, #1f2444, #151a2f);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:16px; padding:10px;
+  display:flex; align-items:center; justify-content:center;
+  aspect-ratio:1/1; min-height:320px;
+}
+svg{width:100%; height:100%}
+
+.controls{background:var(--panel); border:1px solid rgba(255,255,255,.06); border-radius:16px; padding:16px}
+.row{display:flex; gap:12px; align-items:center; flex-wrap:wrap}
+
+/* Input + Confirm : ratio fixe 3/4 – 1/4 */
+.inputline{ display:flex; align-items:center; justify-content:space-between; gap:8px; width:100% }
+.inputline #guess{ flex:0 0 75%; min-width:0 }
+.inputline #confirmBtn{ flex:0 0 25%; padding:10px; text-align:center }
+
+input[type=number]{
+  background:#0f1326; color:var(--ink);
+  border:1px solid rgba(255,255,255,.12); border-radius:12px;
+  padding:12px 14px; font-size:16px; width:140px;
+  transition:border .15s ease, box-shadow .15s ease; outline:none;
+}
+input[type=number]:focus{ border-color:var(--accent); box-shadow:0 0 0 6px rgba(124,92,255,.15) }
+input[type=number]::-webkit-outer-spin-button, input[type=number]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+input[type=number]{ -moz-appearance:textfield }
+
+.btn{
+  appearance:none; border:none; cursor:pointer;
+  color:#fff; font-weight:600; letter-spacing:.2px;
+  padding:12px 16px; border-radius:12px;
+  background:linear-gradient(180deg, #8a6bff, #6945ff);
+  box-shadow:0 6px 16px rgba(105,69,255,.35);
+  transition:transform .05s ease;
+}
+.btn:active{ transform:translateY(1px) }
+.btn.secondary{ background:transparent; border:1px solid rgba(255,255,255,.18); box-shadow:none; color:var(--muted) }
+
+.feedback{ margin-top:14px; display:flex; gap:12px; align-items:center; flex-wrap:wrap }
+.meta{ margin-top:10px; color:var(--muted); font-size:14px }
+.meter{ height:10px; background:#0f1326; border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,.08) }
+.meter > div{ height:100%; width:0%; background:linear-gradient(90deg,#2bd576,#ffd166,#ff8b6b,#ff6b6b); transition:width .25s ease }
+
+#errorMsg{ color:var(--bad); font-size:14px; margin:6px 0 10px; opacity:0; transition:opacity .2s ease }
+#errorMsg.visible{ opacity:1 }
+.guesses{ margin-top:4px; display:flex; flex-wrap:wrap; gap:6px }
+.guess-item{ background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.08); border-radius:8px; padding:4px 10px; font-size:14px; color:var(--muted); transition:background .2s ease }
+.guess-item:hover{ background:rgba(124,92,255,.15); color:var(--ink) }
+.guess-item.added{ animation:pop .25s ease-out }
+@keyframes pop{ 0%{transform:scale(.7);opacity:0} 60%{transform:scale(1.08);opacity:1} 100%{transform:scale(1)} }
+
+.card-header{ display:flex; justify-content:flex-start; margin-bottom:12px }
+.backbtn{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 14px; border-radius:999px;
+  background:rgba(255,255,255,.06);
+  border:1px solid rgba(255,255,255,.12);
+  color:var(--ink); text-decoration:none; font-weight:600; line-height:1;
+  transition:background .15s ease, border-color .15s ease, transform .05s ease;
+}
+.backbtn:hover{ background:rgba(124,92,255,.16); border-color:rgba(124,92,255,.35) }
+.backbtn:active{ transform:translateY(1px) }
+
+.card-intro{
+  display:flex; align-items:flex-start; justify-content:flex-start;
+  gap:12px 16px; margin-bottom:14px; flex-wrap:wrap; align-content:flex-start;
+}
+.card-intro .sub{ margin:0; flex:1 1 auto; min-width:0 }
+
+#streakBar,
+.streakchip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:8px 12px; border-radius:999px;
+  border:1px solid rgba(255,255,255,.12);
+  background:#0e1326; color:#ffd166; font-weight:700;
+  white-space:nowrap; box-shadow:inset 0 1px 0 rgba(255,255,255,.04);
+  margin:0; text-align:left;
+}
+
+.madeby{
+  position:fixed; bottom:12px; left:50%; transform:translateX(-50%);
+  text-align:center; font-size:13px; color:var(--muted); opacity:.75;
+  letter-spacing:.3px; transition:opacity .2s ease, color .2s ease; pointer-events:none;
+}
+.madeby strong{ color:var(--ink) }
+.madeby:hover{ opacity:1; color:var(--accent) }
+
+/* ====== TEST MODE ====== */
+.testbar{
+  position:fixed; top:12px; right:12px; z-index:1000;
+  background:rgba(20,24,43,.95);
   border:1px solid rgba(255,255,255,.1);
-  box-shadow: 0 12px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
-  border-radius: 14px; padding: 16px;
-  color: var(--ink);
+  backdrop-filter:blur(8px);
+  color:var(--ink);
+  padding:12px; border-radius:12px;
+  display:none; width:320px;
+  box-shadow:0 8px 24px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04);
+}
+.testbar.visible{ display:block }
+.testbar h3{ margin:0 0 8px; font-size:14px; color:var(--muted); font-weight:700; letter-spacing:.3px }
+.testgrid{ display:grid; grid-template-columns:1fr 1fr; gap:8px }
+.testbar input[type="date"]{
+  width:100%; background:#0f1326; color:var(--ink);
+  border:1px solid rgba(255,255,255,.12); border-radius:10px;
+  padding:8px 10px; font-size:13px;
+}
+.testbar .btn{ padding:8px 10px; font-size:12px; border-radius:10px }
+.testbar .row{ gap:8px }
+.testnote{ margin-top:8px; font-size:12px; color:var(--muted) }
+
+.test-login-backdrop{
+  position:fixed; inset:0; z-index:2000;
+  background:rgba(0,0,0,.55); backdrop-filter:blur(4px);
+  display:none; align-items:center; justify-content:center;
+}
+.test-login-backdrop.visible{ display:flex }
+.test-login{
+  width:min(360px,92vw);
+  background:rgba(20,24,43,.98);
+  border:1px solid rgba(255,255,255,.1);
+  box-shadow:0 12px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+  border-radius:14px; padding:16px; color:var(--ink);
 }
 .test-login h3{ margin:0 0 10px; font-size:16px; letter-spacing:.2px }
-.test-login label{ display:block; font-size:13px; color: var(--muted); margin:10px 0 6px }
+.test-login label{ display:block; font-size:13px; color:var(--muted); margin:10px 0 6px }
 .test-login input{
   width:100%; background:#0f1326; color:var(--ink);
   border:1px solid rgba(255,255,255,.12); border-radius:10px;
-  padding:10px 12px; font-size:14px; outline: none;
+  padding:10px 12px; font-size:14px; outline:none;
 }
 .test-login .row{ display:flex; gap:8px; margin-top:12px }
 .test-login .btn{ flex:1; padding:10px 12px; font-size:14px; border-radius:10px }
-.test-login .err{ color: var(--bad); font-size:13px; margin-top:8px; min-height:18px }
-  </style>
+.test-login .err{ color:var(--bad); font-size:13px; margin-top:8px; min-height:18px }
+
+/* ====== RESPONSIVE ====== */
+@media (max-width:640px){
+  .card-intro{ flex-direction:column; align-items:flex-start; gap:10px }
+  .backbtn{ padding:8px 12px; font-size:14px }
+}
+
+@media (max-width:430px){
+  /* no-scroll + layout plein écran */
+  html,body{ height:100dvh; overflow:scroll }
+  .app{ height:100%; display:flex; flex-direction:column }
+  .card{ flex:1 1 auto; display:flex; flex-direction:column }
+  .layout{ grid-template-columns:1fr; gap:12px }
+
+  /* stage pleine largeur, hauteur souple */
+  .stage{
+    aspect-ratio:auto; min-height:unset;
+    height:clamp(180px,60vw,320px);
+    padding:8px; border-radius:14px;
+  }
+
+  .card{ padding:14px; border-radius:16px }
+  .controls{ padding:12px; border-radius:14px }
+  .sub{ font-size:14px; margin-bottom:10px }
+  h1{ font-size:clamp(26px, 7vw, 36px); margin-bottom:10px }
+}
+
+@media (max-width:360px){
+  .card{ padding:12px; border-radius:14px }
+  .stage{ height:clamp(160px, 58vw, 260px); padding:6px; border-radius:12px }
+  .controls{ padding:10px; border-radius:12px }
+}
+#precision { display: none; }
+#precision.visible { display: block; opacity: 1; }
+
+/* compat avec ta classe existante */
+#precision.invisible { display: none !important; opacity: 0; }
+</style>
+
 </head>
 <div id="testLoginBackdrop" class="test-login-backdrop" aria-hidden="true">
   <div class="test-login" role="dialog" aria-modal="true" aria-labelledby="testLoginTitle">
@@ -229,13 +264,16 @@
         <div class="controls">
           <form id="form" autocomplete="off" novalidate>
             <label class="discreet" for="guess">Your proposal</label>
-            <input id="guess" name="guess" type="number" inputmode="numeric" min="1" max="179" placeholder="ex. 27" />
-            <button class="btn" type="submit" style="margin-left: 8px;">Confirm</button>
+
+            <!-- NEW: input + confirm on the same line -->
+            <div class="inputline">
+              <input id="guess" name="guess" type="number" inputmode="numeric" min="1" max="179" placeholder="ex. 27" />
+              <button class="btn" type="submit" id="confirmBtn">Confirm</button>
+            </div>
 
             <div id="errorMsg"></div>
-            <div class="row">
-              <button class="btn secondary" type="button" id="reset" style="display:none" aria-hidden="true" tabindex="-1">New game</button>
-            </div>
+
+            <!-- daily: pas de bouton New game -->
           </form>
 
           <div id="feedback" class="feedback"></div>
@@ -255,8 +293,6 @@
       Made with ❤️ by <strong>GrandTh</strong>
     </footer>
   </div>
-
-  <!-- === TEST MODE PANEL (hidden unless ?test=1) === -->
   <div id="testbar" class="testbar">
     <h3>🧪 Daily — Test mode</h3>
     <div class="row" style="margin-bottom:8px;">
@@ -277,7 +313,7 @@
   </div>
 
   <script>
-  // ====== DAILY: clés séparées & anti-relance ======
+  
   const DAILY_GAME_KEY   = 'angle_guessr_daily_game_v1';
   const DAILY_STREAK_KEY = 'angle_guessr_daily_streak_v1';
   const DAILY_BEST_KEY   = 'angle_guessr_daily_best_v1';
@@ -285,10 +321,10 @@
   const DAILY_LAST_WIN   = 'angle_guessr_daily_last_win_v1';
   const INSTALL_ID       = 'angle_guessr_install_id_v1';
 
-  // === TEST MODE flags ===
+  
   const QS = new URLSearchParams(location.search);
   const TEST_MODE = QS.has('test');
-  let TEST_DATE_KEY = null; // 'YYYY-MM-DD' si défini
+  let TEST_DATE_KEY = null; 
 
   let targetAngle = 0;
   let attempts = 0;
@@ -310,10 +346,23 @@
   const guessesList = document.getElementById('guesses-list');
   const precisionDiv = document.getElementById('precision');
 
-  // ===== TEST AUTH (token en localStorage, chiffré via AES-GCM existant) =====
+  
 const TEST_AUTH_TOKEN_KEY = 'angle_guessr_test_auth_token_v1';
 
-// dd/mm/yyyy du jour réel (pas la date simulée)
+function hideAccuracy() {
+  if (!precisionDiv) return;
+  precisionDiv.classList.add('invisible');
+  precisionDiv.classList.remove('visible');
+  if (heatbar) heatbar.style.width = '0%';
+}
+function showAccuracyFromDiff(diff) {
+  if (!precisionDiv) return;
+  if (heatbar) heatbar.style.width = heatPercent(diff) + '%';
+  precisionDiv.classList.remove('invisible');
+  precisionDiv.classList.add('visible');
+}
+
+
 function realTodayDDMMYYYY(){
   const d = new Date();
   const dd = String(d.getDate()).padStart(2,'0');
@@ -322,18 +371,18 @@ function realTodayDDMMYYYY(){
   return `${dd}/${mm}/${yyyy}`;
 }
 
-// Chiffre et stocke un token (inclut la date du jour pour l’expiration)
+
 async function setTestAuthToken(username){
   const payload = {
     u: username,
-    date: realTodayDDMMYYYY(),        // pour invalider demain
+    date: realTodayDDMMYYYY(),        
     ts: Date.now()
   };
   const boxed = await encryptObject(payload);
   localStorage.setItem(TEST_AUTH_TOKEN_KEY, JSON.stringify(boxed));
 }
 
-// Déchiffre le token si présent et valide pour aujourd’hui
+
 async function getValidTestAuth(){
   const raw = localStorage.getItem(TEST_AUTH_TOKEN_KEY);
   if(!raw) return null;
@@ -341,7 +390,7 @@ async function getValidTestAuth(){
     const boxed = JSON.parse(raw);
     const obj = await decryptObject(boxed);
     if(!obj || typeof obj !== 'object') return null;
-    if(obj.date !== realTodayDDMMYYYY()) return null; // expire chaque jour
+    if(obj.date !== realTodayDDMMYYYY()) return null; 
     if(obj.u !== 'admin') return null;
     return obj;
   }catch(e){ return null; }
@@ -357,11 +406,11 @@ function showTestLogin(){
   if(!b || !u || !p || !s || !c) return new Promise(res => res(false));
 
   b.classList.add('visible'); b.setAttribute('aria-hidden','false');
-  u.value = 'admin';           // aide
-  p.value = '';                // à taper par l’utilisateur
+  u.value = 'admin';           
+  p.value = '';                
   err.textContent = '';
 
-  // Focus password par défaut
+  
   setTimeout(()=> p.focus(), 0);
 
   return new Promise(resolve=>{
@@ -399,17 +448,17 @@ function showTestLogin(){
   });
 }
 
-// Vérifie/obtient l’auth avant d’afficher la barre de test
+
 async function ensureTestAuth(){
   const valid = await getValidTestAuth();
   if(valid) return true;
-  // sinon affiche le login (retourne true si OK)
+  
   const ok = await showTestLogin();
   return !!ok;
 }
 
 
-  // ====== Date locale & angle du jour ======
+  
   function realLocalDateKey(){
     const d = new Date();
     const y = d.getFullYear();
@@ -417,11 +466,11 @@ async function ensureTestAuth(){
     const day = String(d.getDate()).padStart(2,'0');
     return `${y}-${m}-${day}`;
   }
-  // ⬇️ surchargée en TEST MODE
+  
   function localDateKey(){
     return TEST_DATE_KEY || realLocalDateKey();
   }
-  function dateFromKey(key){ // 'YYYY-MM-DD' -> Date
+  function dateFromKey(key){ 
     const [y,m,d] = key.split('-').map(Number);
     const dt = new Date(y, (m||1)-1, d||1);
     return dt;
@@ -451,7 +500,7 @@ async function ensureTestAuth(){
       return (h ^= h >>> 16) >>> 0;
     };
   }
-  // mulberry32: simple et rapide
+  
   function mulberry32(a){
     return function(){
       let t = a += 0x6D2B79F5;
@@ -462,32 +511,32 @@ async function ensureTestAuth(){
   }
 
   function todayAngle(){
-    const key = localDateKey();                  // ex: "2025-11-01"
-    // Seed basé sur une clé stable + la date du jour
+    const key = localDateKey();                  
+    
     const seedGen = xmur3('ANGLE_DAILY|' + key);
-    // On dérive 2 seeds pour casser les patterns journaliers (jour/mois)
+    
     const s1 = seedGen();
-    const s2 = seedGen() ^ (new Date(key).getDate() * 2654435761); // mix jour
+    const s2 = seedGen() ^ (new Date(key).getDate() * 2654435761); 
     const s3 = (s1 ^ s2) >>> 0;
 
-    // PRNG
+    
     const rand = mulberry32(s3);
 
-    // On "brule" quelques tirages pour décoreller (faible coût, meilleure dispersion)
+    
     rand(); rand();
 
-    // Nombre entier uniforme dans [1..179]
+    
     const angle = Math.floor(rand() * 179) + 1;
 
-    // Option anti-pattern simple: si par hasard angle == 90 pile, on re-tire une fois
-    // (facultatif; retire ce bloc si tu veux éviter toute règle spéciale)
+    
+    
     if (angle === 90) {
       return Math.floor(rand() * 179) + 1;
     }
     return angle;
   }
 
-  // ====== Dessin & UI ======
+  
   function pointAt(cx,cy,r,deg){const rad=deg*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy-r*Math.sin(rad)}}
   function drawAngle(deg){
     const c={x:200,y:200},r=160,p=pointAt(c.x,c.y,r,deg);
@@ -510,7 +559,7 @@ async function ensureTestAuth(){
   function heatPercent(diff){return(100-Math.min(diff,180)/180*100);}
   function arrowHint(g){if(g<targetAngle)return'⬆️ Higher';if(g>targetAngle)return'⬇️ Lower';return'✅ Exact';}
 
-  // ====== Streak Daily sécurisé ======
+  
   function getInstallId(){
     let id = localStorage.getItem(INSTALL_ID);
     if(!id){
@@ -578,7 +627,7 @@ async function ensureTestAuth(){
     }
   });
 
-  // ====== Chiffrement & sauvegarde (Daily) ======
+  
   function openIDB(){
     return new Promise((resolve, reject) => {
       const req = indexedDB.open('angle_guessr_keys_v1', 1);
@@ -667,8 +716,12 @@ async function ensureTestAuth(){
         : '0%';
 
       const showPrecision = (attempts >= maxAttempts - 1) && gameActive;
-      precisionDiv.classList.toggle('visible', showPrecision);
-      precisionDiv.classList.toggle('invisible', !showPrecision);
+      if (finished && previousGuesses.length) {
+        const last = previousGuesses[previousGuesses.length - 1];
+        showAccuracyFromDiff(Math.abs(last - targetAngle));
+      } else {
+        hideAccuracy();
+}
 
       stats.textContent = finished
         ? `Partie terminée.`
@@ -677,7 +730,7 @@ async function ensureTestAuth(){
       updateGuesses();
       guessInput.disabled = finished || !gameActive;
 
-      // Anti-relance : bouton masqué et inerte
+      
       resetBtn.disabled = true; resetBtn.style.display = 'none';
 
       return true;
@@ -687,7 +740,7 @@ async function ensureTestAuth(){
     }
   }
 
-  // ====== Gameplay (une seule partie / jour) ======
+  
   function updateGuesses(){
     if(previousGuesses.length===0){
       guessesTitle.textContent=''; guessesList.innerHTML=''; return;
@@ -705,8 +758,7 @@ async function ensureTestAuth(){
 
   function startDailyOnce(){
     attempts=0; previousGuesses=[];
-    precisionDiv.classList.remove('visible');
-    precisionDiv.classList.add('invisible');
+    hideAccuracy();
     targetAngle = todayAngle();
     finished = false;
     gameActive = true;
@@ -715,13 +767,13 @@ async function ensureTestAuth(){
     guessesTitle.textContent=''; guessesList.innerHTML='';
     guessInput.disabled=false; guessInput.value=''; errorMsg.textContent=''; errorMsg.classList.remove('visible');
 
-    // Anti-relance : on masque et on désactive définitivement
+    
     resetBtn.disabled = true; resetBtn.style.display = 'none';
 
     animateAngle(0,targetAngle,500);
     guessInput.focus();
 
-    // Sauvegarde immédiatement l’état initial du jour
+    
     saveGame();
   }
 
@@ -748,16 +800,20 @@ async function ensureTestAuth(){
     updateGuesses();
 
     const diff=Math.abs(guess-targetAngle);
+    if (guess === targetAngle) {
+      showAccuracyFromDiff(diff);
+    } else if (attempts >= maxAttempts - 1) {
+      
+      showAccuracyFromDiff(diff);
+    } else {
+      
+      hideAccuracy();
+    }
     feedback.innerHTML='';
     const arrow=document.createElement('div');arrow.className='chip';arrow.textContent=arrowHint(guess);
     const heat=document.createElement('div');heat.className='chip';heat.textContent=heatEmoji(diff);
     feedback.appendChild(arrow); feedback.appendChild(heat);
     heatbar.style.width=heatPercent(diff)+'%';
-
-    if (attempts >= maxAttempts - 1 && gameActive) {
-      precisionDiv.classList.remove('invisible');
-      precisionDiv.classList.add('visible');
-    }
 
     if(guess===targetAngle){
       stats.textContent=`Well done! The angle was ${targetAngle}°. Found in ${attempts} try(s) 🔥`;
@@ -786,7 +842,7 @@ async function ensureTestAuth(){
 
   window.addEventListener('beforeunload', ()=>{ if(gameActive && !finished) saveGame(); });
 
-  // ===== TEST MODE utilities =====
+  
   function setTestInfo() {
     const el = document.getElementById('test-info');
     if (!el) return;
@@ -799,7 +855,7 @@ async function ensureTestAuth(){
   async function resetSavedGame() {
     localStorage.removeItem(DAILY_GAME_KEY);
     attempts = 0; previousGuesses = []; finished = false; gameActive = false;
-    // Redémarre la partie pour la date courante (test)
+    
     startDailyOnce();
     await saveGame();
     setTestInfo();
@@ -817,7 +873,7 @@ async function ensureTestAuth(){
 
   function applyDateKey(key){
     TEST_DATE_KEY = key;
-    // changer de date invalide la partie sauvegardée (clé != date)
+    
     localStorage.removeItem(DAILY_GAME_KEY);
     targetAngle = todayAngle();
     drawAngle(targetAngle);
@@ -842,7 +898,7 @@ async function ensureTestAuth(){
   }
 
   function forceLose() {
-    // spamme des mauvaises réponses jusqu'à perdre
+    
     if (!gameActive || finished) startDailyOnce();
     const wrong = (targetAngle === 1) ? 179 : 1;
     const doTry = () => {
@@ -854,7 +910,7 @@ async function ensureTestAuth(){
     doTry();
   }
 
-  // ====== INIT ======
+  
   (async function init(){
     await loadStreakSafe();
     renderStreak();
@@ -862,13 +918,13 @@ async function ensureTestAuth(){
     targetAngle = todayAngle();
     drawAngle(targetAngle);
 
-    // TEST BAR setup
+    
     if (TEST_MODE) {
       const bar = document.getElementById('testbar');
       bar.classList.add('visible');
 
       const input = document.getElementById('test-date');
-      // valeur par défaut = date courante (clé active)
+      
       const currentKey = localDateKey();
       input.value = currentKey;
 
@@ -891,7 +947,6 @@ async function ensureTestAuth(){
     if (TEST_MODE) {
       const ok = await ensureTestAuth();
       if (!ok) {
-        // Pas d’accès -> on ne montre rien et on sort du mode test
         console.warn('Test mode blocked: authentication failed/canceled.');
       } else {
         const bar = document.getElementById('testbar');
