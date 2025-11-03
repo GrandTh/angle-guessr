@@ -340,7 +340,7 @@ input[type=number]{ -moz-appearance:textfield }
   const stats = document.getElementById('stats');
   const form = document.getElementById('form');
   const guessInput = document.getElementById('guess');
-  const resetBtn = document.getElementById('reset');
+  const confirmBtn = document.getElementById('confirmBtn');
   const errorMsg = document.getElementById('errorMsg');
   const guessesTitle = document.getElementById('guesses-title');
   const guessesList = document.getElementById('guesses-list');
@@ -348,6 +348,11 @@ input[type=number]{ -moz-appearance:textfield }
 
   
 const TEST_AUTH_TOKEN_KEY = 'angle_guessr_test_auth_token_v1';
+
+function setInputsDisabled(disabled){
+  if (guessInput) guessInput.disabled = disabled;
+  if (confirmBtn) confirmBtn.disabled = disabled;
+}
 
 function hideAccuracy() {
   if (!precisionDiv) return;
@@ -728,11 +733,7 @@ async function ensureTestAuth(){
         : (gameActive ? `Try ${attempts}/${maxAttempts}` : `Game over.`);
 
       updateGuesses();
-      guessInput.disabled = finished || !gameActive;
-
-      
-      resetBtn.disabled = true; resetBtn.style.display = 'none';
-
+      setInputsDisabled(finished || !gameActive);
       return true;
     }catch(err){
       console.warn('restoreGame failed', err);
@@ -765,15 +766,14 @@ async function ensureTestAuth(){
     feedback.innerHTML=''; heatbar.style.width='0%';
     stats.textContent='New game, you have 5 attempts.';
     guessesTitle.textContent=''; guessesList.innerHTML='';
-    guessInput.disabled=false; guessInput.value=''; errorMsg.textContent=''; errorMsg.classList.remove('visible');
-
-    
-    resetBtn.disabled = true; resetBtn.style.display = 'none';
+    setInputsDisabled(false);
+    guessInput.value='';
+    errorMsg.textContent='';
+    errorMsg.classList.remove('visible');
 
     animateAngle(0,targetAngle,500);
     guessInput.focus();
 
-    
     saveGame();
   }
 
@@ -817,7 +817,7 @@ async function ensureTestAuth(){
 
     if(guess===targetAngle){
       stats.textContent=`Well done! The angle was ${targetAngle}°. Found in ${attempts} try(s) 🔥`;
-      guessInput.disabled=true;
+      setInputsDisabled(true);
       gameActive = false;
       finished = true;
       await bumpStreakOncePerDay();
@@ -827,7 +827,7 @@ async function ensureTestAuth(){
 
     if(attempts>=maxAttempts){
       stats.textContent=`Lost 💀 The angle was ${targetAngle}°.`;
-      guessInput.disabled=true;
+      setInputsDisabled(true);
       gameActive = false;
       finished = true;
       await resetStreak();
